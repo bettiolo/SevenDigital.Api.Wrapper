@@ -1,17 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
 
 namespace SevenDigital.Api.Wrapper.Http
 {
+	[Serializable]
 	public class RequestData
 	{
 		public string UriPath { get; set; }
 
-		public string HttpMethod { get; set; }
+		public HttpMethod HttpMethod { get; set; }
 
-		public IDictionary<string,string> Parameters { get; set; }
+		public Dictionary<string, string> Parameters { get; set; }
 
-		public IDictionary<string,string> Headers { get; set; }
+		public Dictionary<string, string> Headers { get; set; }
 
 		public bool UseHttps { get; set; }
 
@@ -19,17 +21,14 @@ namespace SevenDigital.Api.Wrapper.Http
 
 		public string TokenSecret { get; set; }
 
-		[Obsolete("Use TokenSecret")]
-		public string UserSecret { get { return TokenSecret; } set { TokenSecret = value; } }
-
 		public bool IsSigned { get; set; }
 
 		public RequestData()
 		{
 			UriPath = string.Empty;
-			HttpMethod = "GET";
-			Parameters = new Dictionary<string,string>();
-			Headers = new Dictionary<string,string>();
+			HttpMethod = HttpMethod.Get;
+			Parameters = new Dictionary<string, string>();
+			Headers = new Dictionary<string, string>();
 			UseHttps = false;
 		}
 	}

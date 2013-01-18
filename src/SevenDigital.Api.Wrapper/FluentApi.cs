@@ -1,10 +1,9 @@
-using System;
 using System.Collections.Generic;
-using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 using SevenDigital.Api.Wrapper.AttributeManagement;
 using SevenDigital.Api.Wrapper.EndpointResolution;
 using SevenDigital.Api.Wrapper.EndpointResolution.OAuth;
-using SevenDigital.Api.Wrapper.Exceptions;
 using SevenDigital.Api.Wrapper.Http;
 using SevenDigital.Api.Wrapper.Serialization;
 
@@ -27,12 +26,10 @@ namespace SevenDigital.Api.Wrapper
 		}
 
 		public FluentApi(IOAuthCredentials oAuthCredentials, IApiUri apiUri)
-			: this(new RequestCoordinator(new GzipHttpClient(), new UrlSigner(), oAuthCredentials, apiUri)) { }
+			: this(new RequestCoordinator(new HttpClientWrapper(), new UrlSigner(), oAuthCredentials, apiUri)) { }
 
 		public FluentApi()
-			: this(new RequestCoordinator(new GzipHttpClient(), new UrlSigner(), 
-				EssentialDependencyCheck<IOAuthCredentials>.Instance, EssentialDependencyCheck<IApiUri>.Instance)) 
-			{ }
+			: this(new RequestCoordinator(new HttpClientWrapper(), new UrlSigner(), EssentialDependencyCheck<IOAuthCredentials>.Instance, EssentialDependencyCheck<IApiUri>.Instance)) { }
 
 		public IFluentApi<T> UsingClient(IHttpClient httpClient)
 		{
@@ -40,9 +37,9 @@ namespace SevenDigital.Api.Wrapper
 			return this;
 		}
 
-		public virtual IFluentApi<T> WithMethod(string methodName)
+		public virtual IFluentApi<T> WithMethod(HttpMethod method)
 		{
-			_requestData.HttpMethod = methodName;
+			_requestData.HttpMethod = method;
 			return this;
 		}
 
@@ -71,51 +68,17 @@ namespace SevenDigital.Api.Wrapper
 			return this;
 		}
 
-		public virtual T Please()
-		{
-			Response response;
-			try
-			{
-				response = _requestCoordinator.HitEndpoint(_requestData);
-			}
-			catch (WebException webException)
-			{
-				throw new ApiWebException(webException.Message, EndpointUrl, webException);
-			}
-
-			try
-			{
-				return _parser.Parse(response);
-			}
-			catch (ApiResponseException apiXmlException)
-			{
-				apiXmlException.Uri = EndpointUrl;
-				throw;
-			}
-		}
-
 		public virtual string EndpointUrl
 		{
-			get { return _requestCoordinator.ConstructEndpoint(_requestData); }
+			get { return _requestCoordinator.EndpointUrl(_requestData); }
 		}
 
-		public virtual void PleaseAsync(Action<T> callback)
+		public virtual async Task<T> PleaseAsync()
 		{
-			_requestCoordinator.HitEndpointAsync(_requestData, PleaseAsyncEnd(callback));
+			var response = await _requestCoordinator.GetDataAsync(_requestData);
+			return _parser.Parse(response);
 		}
 
-		internal Action<Response> PleaseAsyncEnd(Action<T> callback)
-		{
-			return output =>
-			{
-				T entity = _parser.Parse(output);
-				callback(entity);
-			};
-		}
-
-		public IDictionary<string, string> Parameters
-		{
-			get { return _requestData.Parameters; }
-		}
+		public IDictionary<string, string> Parameters { get { return _requestData.Parameters; } }
 	}
 }

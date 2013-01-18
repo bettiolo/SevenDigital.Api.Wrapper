@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Net.Http;
 using SevenDigital.Api.Schema.Attributes;
 using SevenDigital.Api.Schema.OAuth;
 using SevenDigital.Api.Wrapper.Http;
@@ -18,7 +19,7 @@ namespace SevenDigital.Api.Wrapper.AttributeManagement
 
 			if (ParseHttpPostAttribute() != null)
 			{
-				requestData.HttpMethod = "POST";
+				requestData.HttpMethod = HttpMethod.Post;
 			}
 
 			return requestData;
@@ -26,13 +27,13 @@ namespace SevenDigital.Api.Wrapper.AttributeManagement
 
 		private static string ParseApiEndpointAttribute()
 		{
-			var attribute = typeof (T).GetCustomAttributes(true)
+			var attribute = typeof(T).GetCustomAttributes(true)
 				.OfType<ApiEndpointAttribute>()
 				.FirstOrDefault();
 
 			if (attribute == null)
 			{
-				throw new ArgumentException(string.Format("The Type {0} cannot be used in this way, it has no ApiEndpointAttribute", typeof (T)));
+				throw new ArgumentException(string.Format("The Type {0} cannot be used in this way, it has no ApiEndpointAttribute", typeof(T)));
 			}
 
 			return attribute.EndpointUri;
