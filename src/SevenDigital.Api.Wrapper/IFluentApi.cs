@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Threading.Tasks;
 using SevenDigital.Api.Wrapper.Http;
 
 namespace SevenDigital.Api.Wrapper
@@ -13,7 +13,6 @@ namespace SevenDigital.Api.Wrapper
 		IFluentApi<T> ForUser(string token, string secret);
 		IFluentApi<T> UsingClient(IHttpClient httpClient);
 
-		T Please();
-		void PleaseAsync(Action<T> callback);
+		Task<T> PleaseAsync();
 	}
 }

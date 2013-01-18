@@ -1,13 +1,11 @@
-﻿using System;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SevenDigital.Api.Wrapper.Http
 {
 	public interface IHttpClient
 	{
-		Response Get(GetRequest request);
-		void GetAsync(GetRequest request, Action<Response> callback);
-
-		Response Post(PostRequest request);
-		void PostAsync(PostRequest request, Action<Response> callback);
+		Task<Response> GetAsync(IDictionary<string, string> headers, string url);
+		Task<Response> PostAsync(IDictionary<string, string> headers, IDictionary<string, string> postParams, string url);
 	}
 }

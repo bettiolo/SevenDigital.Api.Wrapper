@@ -10,7 +10,7 @@ namespace SevenDigital.Api.Wrapper.Unit.Tests.Http
 		[Test]
 		public void Should_return_correct_nvc_as_querystring()
 		{
-			var expected =  new Dictionary<string,string>(){{"artistId", "1234"},{"country", "GB"}};
+			var expected =  new Dictionary<string,string>{{"artistId", "1234"},{"country", "GB"}};
 			string querystring = expected.ToQueryString();
 			Assert.That(querystring, Is.EqualTo("artistId=1234&country=GB"));
 		}
