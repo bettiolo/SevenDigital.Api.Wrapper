@@ -36,9 +36,9 @@ namespace SevenDigital.Api.Wrapper.Http
 		private HttpClient MakeHttpClient(IDictionary<string, string> headers)
 		{
 			var httpClient = new HttpClient(new HttpClientHandler
-			{
-				AutomaticDecompression = DecompressionMethods.GZip
-			});
+				{
+					AutomaticDecompression = DecompressionMethods.GZip
+				});
 
 			httpClient.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip", 1.0));
 			httpClient.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("UTF8", 0.9));
