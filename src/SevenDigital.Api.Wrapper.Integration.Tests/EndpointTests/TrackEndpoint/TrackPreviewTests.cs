@@ -7,12 +7,12 @@ namespace SevenDigital.Api.Wrapper.Integration.Tests.EndpointTests.TrackEndpoint
 	public class TrackPreviewTests
 	{
 		[Test]
-		public void Can_hit_endpoint_with_redirect_false()
+		public async void Can_hit_endpoint_with_redirect_false()
 		{
-			TrackPreview track = Api<TrackPreview>.Create
+			TrackPreview track = await Api<TrackPreview>.Create
 				.WithParameter("trackid", "123")
 				.WithParameter("redirect", "false")
-				.Please();
+				.PleaseAsync();
 
 			Assert.That(track, Is.Not.Null);
 			Assert.That(track.Url, Is.EqualTo("http://previews.7digital.com/clips/34/123.clip.mp3"));

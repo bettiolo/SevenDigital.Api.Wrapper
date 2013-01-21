@@ -11,13 +11,13 @@ namespace SevenDigital.Api.Wrapper.Integration.Tests.EndpointTests.ReleaseEndpoi
 	public class ReleaseChartTests
 	{
 		[Test]
-		public void Can_hit_endpoint()
+		public async void Can_hit_endpoint()
 		{
-			ReleaseChart release = Api<ReleaseChart>.Create
+			ReleaseChart release = await Api<ReleaseChart>.Create
 				.WithParameter("fromDate", "20110101")
 				.WithParameter("toDate", "20110301")
 				.WithParameter("country", "GB")
-				.Please();
+				.PleaseAsync();
 
 			Assert.That(release, Is.Not.Null);
 			Assert.That(release.ChartItems.Count, Is.GreaterThan(0));
@@ -27,14 +27,14 @@ namespace SevenDigital.Api.Wrapper.Integration.Tests.EndpointTests.ReleaseEndpoi
 		}
 
 		[Test]
-		public void Can_hit_endpoint_with_paging()
+		public async void Can_hit_endpoint_with_paging()
 		{
-			ReleaseChart artistBrowse = Api<ReleaseChart>.Create
+			ReleaseChart artistBrowse = await Api<ReleaseChart>.Create
 				.WithParameter("fromDate", "20090610")
 				.WithParameter("toDate", "20110101")
 				.WithParameter("page", "2")
 				.WithParameter("pageSize", "20")
-				.Please();
+				.PleaseAsync();
 
 			Assert.That(artistBrowse, Is.Not.Null);
 			Assert.That(artistBrowse.Page, Is.EqualTo(2));
@@ -42,13 +42,13 @@ namespace SevenDigital.Api.Wrapper.Integration.Tests.EndpointTests.ReleaseEndpoi
 		}
 
 		[Test]
-		public void Can_hit_fluent_endpoint() 
+		public async void Can_hit_fluent_endpoint() 
 		{
-			var release = Api<ReleaseChart>
+			var release = await Api<ReleaseChart>
 							.Create
 							.WithToDate(new DateTime(2011, 01, 31))
 							.WithPeriod(ChartPeriod.Week)
-							.Please();
+							.PleaseAsync();
 
 			Assert.That(release, Is.Not.Null);
 			Assert.That(release.ChartItems.Count, Is.EqualTo(10));

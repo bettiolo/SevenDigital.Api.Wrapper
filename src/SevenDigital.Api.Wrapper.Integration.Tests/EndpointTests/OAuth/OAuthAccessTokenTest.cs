@@ -9,15 +9,15 @@ namespace SevenDigital.Api.Wrapper.Integration.Tests.EndpointTests.OAuth
 	public class OAuthAccessTokenTest
 	{
 		[Test, Ignore("This will need a valid request token and secret!")]
-		public void Should_not_throw_unauthorised_exception_if_correct_creds_passed()
+		public async void Should_not_throw_unauthorised_exception_if_correct_creds_passed()
 		{
 			try
 			{
 				const string oauthToken = "YOUR_REQUEST_TOKEN_HERE";
 				const string oauthSecret = "YOUR_TOKEN_SCRET_HERE";
-				OAuthAccessToken authAccessToken = Api<OAuthAccessToken>.Create
+				OAuthAccessToken authAccessToken = await Api<OAuthAccessToken>.Create
 					.ForUser(oauthToken, oauthSecret)
-					.Please();
+					.PleaseAsync();
 
 				Assert.That(authAccessToken.Secret, Is.Not.Empty);
 				Assert.That(authAccessToken.Token, Is.Not.Empty);

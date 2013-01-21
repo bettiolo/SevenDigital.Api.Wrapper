@@ -8,62 +8,62 @@ namespace SevenDigital.Api.Wrapper.Integration.Tests.EndpointTests.TerritoriesEn
 	public class TerritoriesEndpointTests
 	{
 		[Test]
-		public void Can_hit_fluent_endpoint_for_country_lookup()
+		public async void Can_hit_fluent_endpoint_for_country_lookup()
 		{
-			var countryForIp = Api<GeoIpLookup>
+			var countryForIp = await Api<GeoIpLookup>
 				.Create
 				.WithIpAddress("84.45.95.241")
 				.WithParameter("shopId", "34")
-				.Please();
+				.PleaseAsync();
 
 			Assert.That(countryForIp, Is.Not.Null);
 			Assert.That(countryForIp.CountryCode, Is.EqualTo("7"));
 		}
 
 		[Test]
-		public void Can_hit_fluent_endpoint_for_checkout_restrictions_with_checkout_allowed()
+		public async void Can_hit_fluent_endpoint_for_checkout_restrictions_with_checkout_allowed()
 		{
-			var restrictions = Api<GeoRestrictions>
+			var restrictions = await Api<GeoRestrictions>
 				.Create
 				.WithIpAddress("84.45.95.241")
 				.WithParameter("shopId", "34")
-				.Please();
+				.PleaseAsync();
 
 			Assert.That(restrictions, Is.Not.Null);
 			Assert.That(restrictions.AllowCheckout, Is.True);
 		}
 
 		[Test]
-		public void Can_hit_fluent_endpoint_for_checkout_restrictions_with_checkout_not_allowed()
+		public async void Can_hit_fluent_endpoint_for_checkout_restrictions_with_checkout_not_allowed()
 		{
-			var restrictions = Api<GeoRestrictions>
+			var restrictions = await Api<GeoRestrictions>
 				.Create
 				.WithIpAddress("1.2.3.4")
 				.WithParameter("shopId", "34")
-				.Please();
+				.PleaseAsync();
 
 			Assert.That(restrictions, Is.Not.Null);
 			Assert.That(restrictions.AllowCheckout, Is.False);
 		}
 
 		[Test]
-		public void Can_hit_fluent_endpoint_for_territories_checkout_restrictions_with_ip_only()
+		public async void Can_hit_fluent_endpoint_for_territories_checkout_restrictions_with_ip_only()
 		{
-			var restrictions = Api<GeoRestrictions>
+			var restrictions = await Api<GeoRestrictions>
 				.Create
 				.WithIpAddress("84.45.95.241")
-				.Please();
+				.PleaseAsync();
 
 			Assert.That(restrictions, Is.Not.Null);
 			Assert.That(restrictions.AllowCheckout, Is.True);
 		}
 
 		[Test]
-		public void Can_hit_countries_list_endpoint()
+		public async void Can_hit_countries_list_endpoint()
 		{
-			var countries = Api<Countries>
+			var countries = await Api<Countries>
 				.Create
-				.Please();
+				.PleaseAsync();
 
 			Assert.That(countries, Is.Not.Null);
 			Assert.That(countries.CountryItems, Is.Not.Null);
@@ -71,11 +71,11 @@ namespace SevenDigital.Api.Wrapper.Integration.Tests.EndpointTests.TerritoriesEn
 		}
 
 		[Test]
-		public void Countries_list_contains_gb()
+		public async void Countries_list_contains_gb()
 		{
-			var countries = Api<Countries>
+			var countries = await Api<Countries>
 				.Create
-				.Please();
+				.PleaseAsync();
 
 			var gb = countries.CountryItems.First(c => c.Code == "GB");
 			Assert.That(gb, Is.Not.Null);
@@ -85,11 +85,11 @@ namespace SevenDigital.Api.Wrapper.Integration.Tests.EndpointTests.TerritoriesEn
 		}
 
 		[Test]
-		public void Countries_list_contains_gb_language()
+		public async void Countries_list_contains_gb_language()
 		{
-			var countries = Api<Countries>
+			var countries = await Api<Countries>
 				.Create
-				.Please();
+				.PleaseAsync();
 
 			var gb = countries.CountryItems.First(c => c.Code == "GB");
 

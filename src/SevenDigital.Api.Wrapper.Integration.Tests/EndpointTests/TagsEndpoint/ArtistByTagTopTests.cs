@@ -9,12 +9,12 @@ namespace SevenDigital.Api.Wrapper.Integration.Tests.EndpointTests.TagsEndpoint
 	public class ArtistByTagTopTests
 	{
 		[Test]
-		public void Can_hit_endpoint()
+		public async void Can_hit_endpoint()
 		{
 
-			ArtistByTagTop tags = Api<ArtistByTagTop>.Create
+			ArtistByTagTop tags = await Api<ArtistByTagTop>.Create
 				.WithParameter("tags", "rock,pop,2000s")
-				.Please();
+				.PleaseAsync();
 
 			Assert.That(tags, Is.Not.Null);
 			Assert.That(tags.TaggedArtists.Count, Is.GreaterThan(0));
@@ -23,14 +23,14 @@ namespace SevenDigital.Api.Wrapper.Integration.Tests.EndpointTests.TagsEndpoint
 		}
 
 		[Test]
-		public void Can_hit_endpoint_with_paging()
+		public async void Can_hit_endpoint_with_paging()
 		{
 
-			ArtistByTagTop artistBrowse = Api<ArtistByTagTop>.Create
+			ArtistByTagTop artistBrowse = await Api<ArtistByTagTop>.Create
 				.WithParameter("tags", "rock,pop,2000s")
 				.WithParameter("page", "2")
 				.WithParameter("pageSize", "20")
-				.Please();
+				.PleaseAsync();
 
 			Assert.That(artistBrowse, Is.Not.Null);
 			Assert.That(artistBrowse.Page, Is.EqualTo(2));
