@@ -10,13 +10,13 @@ namespace SevenDigital.Api.Wrapper.Integration.Tests.EndpointTests.TrackEndpoint
 	public class TrackChartTests
 	{
 		[Test]
-		public void Can_hit_endpoint()
+		public async void Can_hit_endpoint()
 		{
-			TrackChart release = Api<TrackChart>.Create
+			TrackChart release = await Api<TrackChart>.Create
 				.WithParameter("fromDate", "20110101")
 				.WithParameter("toDate", "20110301")
 				.WithParameter("country", "GB")
-				.Please();
+				.PleaseAsync();
 
 			Assert.That(release, Is.Not.Null);
 			Assert.That(release.ChartItems.Count, Is.GreaterThan(0));
@@ -27,14 +27,14 @@ namespace SevenDigital.Api.Wrapper.Integration.Tests.EndpointTests.TrackEndpoint
 		}
 
 		[Test]
-		public void Can_hit_endpoint_with_paging()
+		public async void Can_hit_endpoint_with_paging()
 		{
-			TrackChart artistBrowse = Api<TrackChart>.Create
+			TrackChart artistBrowse = await Api<TrackChart>.Create
 				.WithParameter("fromDate", "20090610")
 				.WithParameter("toDate", "20110101")
 				.WithParameter("page", "2")
 				.WithParameter("pageSize", "20")
-				.Please();
+				.PleaseAsync();
 
 			Assert.That(artistBrowse, Is.Not.Null);
 			Assert.That(artistBrowse.Page, Is.EqualTo(2));
@@ -42,13 +42,13 @@ namespace SevenDigital.Api.Wrapper.Integration.Tests.EndpointTests.TrackEndpoint
 		}
 
 		[Test]
-		public void Can_hit_fluent_endpoint()
+		public async void Can_hit_fluent_endpoint()
 		{
-			var release = Api<TrackChart>
+			var release = await Api<TrackChart>
 							.Create
 							.WithToDate(new DateTime(2011, 01, 31))
 							.WithPeriod(ChartPeriod.Week)
-							.Please();
+							.PleaseAsync();
 
 			Assert.That(release, Is.Not.Null);
 			Assert.That(release.ChartItems.Count, Is.EqualTo(10));

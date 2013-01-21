@@ -8,11 +8,11 @@ namespace SevenDigital.Api.Wrapper.Integration.Tests.EndpointTests.TranslationsE
 	public class TranslationsEndpointTests
 	{
 		[Test, Ignore("Not yet public")]
-		public void Should_hit_translations_endpoint()
+		public async void Should_hit_translations_endpoint()
 		{
-			var translations = Api<Translations>
+			var translations = await Api<Translations>
 				.Create
-				.Please();
+				.PleaseAsync();
 
 			Assert.That(translations, Is.Not.Null);
 			Assert.That(translations.TotalItems, Is.GreaterThan(0));
@@ -20,13 +20,13 @@ namespace SevenDigital.Api.Wrapper.Integration.Tests.EndpointTests.TranslationsE
 		}
 
 		[Test, Ignore("Not yet public")]
-		public void Should_hit_translations_endpoint_with_paging()
+		public async void Should_hit_translations_endpoint_with_paging()
 		{
-			var translations = Api<Translations>
+			var translations = await Api<Translations>
 				.Create
 				.WithPageSize(1)
 				.WithPageNumber(2)
-				.Please();
+				.PleaseAsync();
 
 			Assert.That(translations, Is.Not.Null);
 			Assert.That(translations.TotalItems, Is.GreaterThan(0));
