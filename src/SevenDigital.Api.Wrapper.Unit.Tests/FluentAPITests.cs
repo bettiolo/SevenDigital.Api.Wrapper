@@ -20,12 +20,12 @@ namespace SevenDigital.Api.Wrapper.Unit.Tests
 		private readonly Response _stubResponse = new Response(HttpStatusCode.OK, ValidStatusXml);
 
 		[Test]
-		public void Should_fire_requestcoordinator_with_correct_endpoint_on_resolve()
+		public async void Should_fire_requestcoordinator_with_correct_endpoint_on_resolve()
 		{
 			var requestCoordinator = A.Fake<IRequestCoordinator>();
 			requestCoordinator.MockGetDataAsync(this._stubResponse);
 
-			new FluentApi<Status>(requestCoordinator).PleaseAsync();
+			await new FluentApi<Status>(requestCoordinator).PleaseAsync();
 
 			Expression<Func<Task<Response>>> callWithEndpointStatus =
 				() => requestCoordinator.GetDataAsync(A<RequestData>.That.Matches(x => x.UriPath == "status"));
@@ -34,12 +34,12 @@ namespace SevenDigital.Api.Wrapper.Unit.Tests
 		}
 
 		[Test]
-		public void Should_fire_requestcoordinator_with_correct_methodname_on_resolve()
+		public async void Should_fire_requestcoordinator_with_correct_methodname_on_resolve()
 		{
 			var requestCoordinator = A.Fake<IRequestCoordinator>();
 			requestCoordinator.MockGetDataAsync(this._stubResponse);
 
-			new FluentApi<Status>(requestCoordinator).WithMethod(HttpMethod.Post).PleaseAsync();
+			await new FluentApi<Status>(requestCoordinator).WithMethod(HttpMethod.Post).PleaseAsync();
 
 			Expression<Func<Task<Response>>> callWithMethodPost =
 				() => requestCoordinator.GetDataAsync(A<RequestData>.That.Matches(x => x.HttpMethod == HttpMethod.Post));
@@ -48,12 +48,12 @@ namespace SevenDigital.Api.Wrapper.Unit.Tests
 		}
 
 		[Test]
-		public void Should_fire_requestcoordinator_with_correct_parameters_on_resolve()
+		public async void Should_fire_requestcoordinator_with_correct_parameters_on_resolve()
 		{
 			var requestCoordinator = A.Fake<IRequestCoordinator>();
 			requestCoordinator.MockGetDataAsync(this._stubResponse);
 
-			new FluentApi<Status>(requestCoordinator).WithParameter("artistId", "123").PleaseAsync();
+			await new FluentApi<Status>(requestCoordinator).WithParameter("artistId", "123").PleaseAsync();
 
 			Expression<Func<Task<Response>>> callWithArtistId123 =
 				() => requestCoordinator.GetDataAsync(A<RequestData>.That.Matches(x => x.Parameters["artistId"] == "123"));
