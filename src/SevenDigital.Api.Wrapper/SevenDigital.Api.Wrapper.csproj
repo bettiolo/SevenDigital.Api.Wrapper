@@ -47,6 +47,7 @@
     <Compile Include="AttributeManagement\AttributeRequestDataBuilder.cs" />
     <Compile Include="EndpointResolution\AppDomainAssemblyResolver.cs" />
     <Compile Include="EndpointResolution\EssentialDependencyCheck.cs" />
+    <Compile Include="EndpointResolution\OAuth\NonceGenerator.cs" />
     <Compile Include="Exceptions\ApiErrorException.cs" />
     <Compile Include="Exceptions\ApiException.cs" />
     <Compile Include="Exceptions\ApiResponseException.cs" />
