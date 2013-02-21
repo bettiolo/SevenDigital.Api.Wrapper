@@ -8,12 +8,14 @@ namespace SevenDigital.Api.Wrapper.Integration.Tests.EndpointTests.TagsEndpoint
 	[TestFixture]
 	public class ArtistByTagTopTests
 	{
+		private const string Tags = "rock,pop";
+
 		[Test]
 		public async void Can_hit_endpoint()
 		{
 
 			ArtistByTagTop tags = await Api<ArtistByTagTop>.Create
-				.WithParameter("tags", "rock,pop,2000s")
+				.WithParameter("tags", Tags)
 				.PleaseAsync();
 
 			Assert.That(tags, Is.Not.Null);
@@ -27,7 +29,7 @@ namespace SevenDigital.Api.Wrapper.Integration.Tests.EndpointTests.TagsEndpoint
 		{
 
 			ArtistByTagTop artistBrowse = await Api<ArtistByTagTop>.Create
-				.WithParameter("tags", "rock,pop,2000s")
+				.WithParameter("tags", Tags)
 				.WithParameter("page", "2")
 				.WithParameter("pageSize", "20")
 				.PleaseAsync();
