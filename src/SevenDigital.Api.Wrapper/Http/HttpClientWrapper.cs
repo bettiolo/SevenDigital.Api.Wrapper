@@ -12,8 +12,10 @@ namespace SevenDigital.Api.Wrapper.Http
 		public async Task<Response> GetAsync(IDictionary<string, string> headers, string url)
 		{
 			var httpClient = MakeHttpClient(headers);
-			var httpResponseMessage = await httpClient.GetAsync(url);
-			return await MakeResponse(httpResponseMessage);
+			using (var httpResponseMessage = await httpClient.GetAsync(url))
+			{
+				return await MakeResponse(httpResponseMessage);
+			}
 		}
 
 		public async Task<Response> PostAsync(IDictionary<string, string> headers, IDictionary<string, string> postParams, string url)
@@ -21,8 +23,10 @@ namespace SevenDigital.Api.Wrapper.Http
 			var httpClient = MakeHttpClient(headers);
 			var content = PostParamsToHttpContent(postParams);
 
-			var httpResponseMessage = await httpClient.PostAsync(url, content);
-			return await MakeResponse(httpResponseMessage);
+			using (var httpResponseMessage = await httpClient.PostAsync(url, content))
+			{
+				return await MakeResponse(httpResponseMessage);
+			}
 		}
 
 		private static HttpContent PostParamsToHttpContent(IDictionary<string, string> postParams)
