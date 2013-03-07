@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using SevenDigital.Api.Schema.ArtistEndpoint;
 
 namespace SevenDigital.Api.Wrapper.Integration.Tests.EndpointTests.ArtistEndpoint
@@ -18,7 +17,7 @@ namespace SevenDigital.Api.Wrapper.Integration.Tests.EndpointTests.ArtistEndpoin
 			Assert.That(artist, Is.Not.Null);
 			Assert.That(artist.Name, Is.EqualTo("Keane"));
 			Assert.That(artist.SortName, Is.EqualTo("Keane"));
-			Assert.That(artist.Url, Is.StringStarting("http://www.7digital.com/artists/keane/"));
+			Assert.That(artist.Url, Is.StringStarting("http://www.7digital.com/artist/keane/"));
 			Assert.That(artist.Image, Is.EqualTo("http://cdn.7static.com/static/img/artistimages/00/000/000/0000000001_150.jpg"));
 		}
 	}
