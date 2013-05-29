@@ -1,9 +1,12 @@
+using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using SevenDigital.Api.Wrapper.AttributeManagement;
 using SevenDigital.Api.Wrapper.EndpointResolution;
 using SevenDigital.Api.Wrapper.EndpointResolution.OAuth;
+using SevenDigital.Api.Wrapper.Exceptions;
 using SevenDigital.Api.Wrapper.Http;
 using SevenDigital.Api.Wrapper.Serialization;
 
@@ -14,6 +17,7 @@ namespace SevenDigital.Api.Wrapper
 		private readonly RequestData _requestData;
 		private readonly IRequestCoordinator _requestCoordinator;
 		private readonly IResponseParser<T> _parser;
+		private IResponseCache _responseCache = new NullResponseCache();
 
 		public FluentApi(IRequestCoordinator requestCoordinator)
 		{
@@ -33,7 +37,23 @@ namespace SevenDigital.Api.Wrapper
 
 		public IFluentApi<T> UsingClient(IHttpClient httpClient)
 		{
+			if (httpClient == null)
+			{
+				throw new ArgumentNullException("httpClient");
+			}
+
 			_requestCoordinator.HttpClient = httpClient;
+			return this;
+		}
+
+		public IFluentApi<T> UsingCache(IResponseCache responseCache)
+		{
+			if (responseCache == null)
+			{
+				throw new ArgumentNullException("responseCache");
+			}
+
+			_responseCache = responseCache;
 			return this;
 		}
 
@@ -75,8 +95,37 @@ namespace SevenDigital.Api.Wrapper
 
 		public virtual async Task<T> PleaseAsync()
 		{
-			var response = await _requestCoordinator.GetDataAsync(_requestData);
-			return _parser.Parse(response);
+			Response response;
+
+			bool foundInCache = _responseCache.TryGet(_requestData, out response);
+			if (!foundInCache)
+			{
+				try
+				{
+					response = await _requestCoordinator.GetDataAsync(_requestData);
+				}
+				catch (WebException webException)
+				{
+					throw new ApiWebException(webException.Message, EndpointUrl, webException);
+				}
+			}
+
+			try
+			{
+				var result = _parser.Parse(response);
+
+				// set to cache only after all validation and parsing has suceeded
+				if (!foundInCache)
+				{
+					_responseCache.Set(_requestData, response);
+				}
+				return result;
+			}
+			catch (ApiResponseException apiXmlException)
+			{
+				apiXmlException.Uri = EndpointUrl;
+				throw;
+			}
 		}
 
 		public IDictionary<string, string> Parameters { get { return _requestData.Parameters; } }

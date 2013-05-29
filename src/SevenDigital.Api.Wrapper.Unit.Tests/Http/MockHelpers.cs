@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 using FakeItEasy;
 using SevenDigital.Api.Wrapper.EndpointResolution;
@@ -37,11 +39,21 @@ namespace SevenDigital.Api.Wrapper.Unit.Tests.Http
 				A<string>.That.Matches(y => y.Contains(expected))))
 				.MustHaveHappened(Repeated.Exactly.Once);
 		}
-		public static void MockGetDataAsync(this IRequestCoordinator httpClient, Response response)
+
+		public static void MockGetDataAsync(this IRequestCoordinator requestCoordinator, Response response)
 		{
-			A.CallTo(() => httpClient.GetDataAsync(A<RequestData>.Ignored))
+			A.CallTo(() => requestCoordinator.GetDataAsync(A<RequestData>.Ignored))
 				.ReturnsLazily(() => Task.FromResult(response));
 		}
 
+		public static void MockThrowsWebException(this IRequestCoordinator requestCoordinator)
+		{
+			A.CallTo(() => requestCoordinator.GetDataAsync(A<RequestData>.Ignored)).Throws<WebException>();
+		}
+
+		public static void MockUrl(this IRequestCoordinator requestCoordinator, string url)
+		{
+			A.CallTo(() => requestCoordinator.EndpointUrl(A<RequestData>.Ignored)).Returns(url);
+		}
 	}
 }
