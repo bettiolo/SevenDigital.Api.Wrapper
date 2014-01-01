@@ -18,8 +18,8 @@ namespace SevenDigital.Api.Wrapper.EndpointResolution
 			_requestHandlers = requestHandlers;
 		}
 
-        public string EndpointUrl(RequestData requestData)
-        {
+		public string EndpointUrl(RequestData requestData)
+		{
 			return ConstructBuilder(requestData).ConstructEndpoint(requestData);
 		}
 
@@ -27,7 +27,7 @@ namespace SevenDigital.Api.Wrapper.EndpointResolution
 		{
 			foreach (var requestHandler in _requestHandlers)
 			{
-                if (requestHandler.HandlesMethod(requestData.HttpMethod))
+				if (requestHandler.HandlesMethod(requestData.HttpMethod))
 				{
 					return requestHandler;
 				}
@@ -35,11 +35,11 @@ namespace SevenDigital.Api.Wrapper.EndpointResolution
 			throw new NotImplementedException("No RequestHandlers supplied that can deal with this method");
 		}
 
-        public Task<Response> GetDataAsync(RequestData requestData)
-        {
-            var builder = ConstructBuilder(requestData);
-            builder.HttpClient = HttpClient;
-            return builder.HitEndpoint(requestData);
-        }
-    }
+		public Task<Response> GetDataAsync(RequestData requestData)
+		{
+			var builder = ConstructBuilder(requestData);
+			builder.HttpClient = HttpClient;
+			return builder.HitEndpoint(requestData);
+		}
+	}
 }
