@@ -1,5 +1,6 @@
-using System;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 using SevenDigital.Api.Schema.OAuth;
 using SevenDigital.Api.Wrapper.EndpointResolution.OAuth;
 using SevenDigital.Api.Wrapper.Http;
@@ -17,29 +18,17 @@ namespace SevenDigital.Api.Wrapper.EndpointResolution.RequestHandlers
 			_signatureGenerator = signatureGenerator;
 		}
 
-		public override bool HandlesMethod(string method)
+		public override bool HandlesMethod(HttpMethod method)
 		{
-			return method == "GET";
+			return method == HttpMethod.Get;
 		}
 
-		public override Response HitEndpoint(RequestData requestData)
-		{
-			var getRequest = BuildGetRequest(requestData);
-			return HttpClient.Get(getRequest);
-		}
-
-		public override void HitEndpointAsync(RequestData requestData, Action<Response> action)
-		{
-			var getRequest = BuildGetRequest(requestData);
-			HttpClient.GetAsync(getRequest, response => action(response));
-		}
-
-		private GetRequest BuildGetRequest(RequestData requestData)
+		public override async Task<Response> HitEndpoint(RequestData requestData)
 		{
 			var uri = ConstructEndpoint(requestData);
 			var signedUrl = SignHttpGetUrl(uri, requestData);
-			var getRequest = new GetRequest(signedUrl, requestData.Headers);
-			return getRequest;
+
+		    return await HttpClient.GetAsync(requestData.Headers, signedUrl);
 		}
 
 		private string SignHttpGetUrl(string uri, RequestData requestData)

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 using SevenDigital.Api.Schema.OAuth;
 using SevenDigital.Api.Wrapper.EndpointResolution.OAuth;
 using SevenDigital.Api.Wrapper.Http;
@@ -18,30 +20,19 @@ namespace SevenDigital.Api.Wrapper.EndpointResolution.RequestHandlers
 			_signatureGenerator = signatureGenerator;
 		}
 
-		public override bool HandlesMethod(string method)
+		public override bool HandlesMethod(HttpMethod method)
 		{
-			return method == "POST";
+			return method == HttpMethod.Post;
 		}
 
-		public override Response HitEndpoint(RequestData requestData)
+		public override async Task<Response> HitEndpoint(RequestData requestData)
 		{
-			var postRequest = BuildPostRequest(requestData);
-			return HttpClient.Post(postRequest);
+            var uri = ConstructEndpoint(requestData);
+            var signedParams = SignHttpPostParams(uri, requestData);
+
+            return await HttpClient.PostAsync(requestData.Headers, signedParams, uri);
 		}
 
-		public override void HitEndpointAsync(RequestData requestData, Action<Response> action)
-		{
-			var postRequest = BuildPostRequest(requestData);
-			HttpClient.PostAsync(postRequest,response => action(response));
-		}
-
-		private PostRequest BuildPostRequest(RequestData requestData)
-		{
-			var uri = ConstructEndpoint(requestData);
-			var signedParams = SignHttpPostParams(uri, requestData);
-			var postRequest = new PostRequest(uri, requestData.Headers, signedParams);
-			return postRequest;
-		}
 
 		private IDictionary<string, string> SignHttpPostParams(string uri, RequestData requestData)
 		{

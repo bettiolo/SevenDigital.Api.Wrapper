@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using SevenDigital.Api.Wrapper.Http;
 
 namespace SevenDigital.Api.Wrapper.EndpointResolution.RequestHandlers
 {
 	public abstract class RequestHandler
 	{
-		public abstract Response HitEndpoint(RequestData requestData);
-		public abstract void HitEndpointAsync(RequestData requestData, Action<Response> action);
+		public abstract Task<Response> HitEndpoint(RequestData requestData);
 		protected abstract string AdditionalParameters(Dictionary<string, string> newDictionary);
 
 		private readonly IApiUri _apiUri;
@@ -19,7 +20,7 @@ namespace SevenDigital.Api.Wrapper.EndpointResolution.RequestHandlers
 			_apiUri = apiUri;
 		}
 
-		public abstract bool HandlesMethod(string method);
+		public abstract bool HandlesMethod(HttpMethod method);
 
 		public IHttpClient HttpClient { get; set; }
 
