@@ -124,6 +124,36 @@ namespace SevenDigital.Api.Wrapper.Unit.Tests.Http
 		}
 
 		[Test]
+		public void Should_use_api_uri_provided_by_IApiUri_interface()
+		{
+			const string expectedApiUri = "http://api.7dizzle";
+
+			Given_a_urlresolver_that_returns_valid_xml();
+
+			var apiUri = A.Fake<IApiUri>();
+
+			A.CallTo(() => apiUri.Uri).Returns(expectedApiUri);
+			var endpointResolver = new RequestCoordinator(_httpClient, RequestHandlerFactory.AllRequestHandlers(EssentialDependencyCheck<IOAuthCredentials>.Instance, apiUri));
+
+			var requestData = new RequestData
+				{
+					UriPath = "test",
+					HttpMethod = HttpMethod.Get,
+					Headers = new Dictionary<string, string>()
+				};
+
+			endpointResolver.GetDataAsync(requestData);
+
+			A.CallTo(() => apiUri.Uri).MustHaveHappened(Repeated.Exactly.Once);
+
+
+			A.CallTo(() => _httpClient.GetAsync(
+				A<IDictionary<string, string>>.Ignored,
+				A<string>.That.Matches(x => x.Contains(expectedApiUri))))
+				.MustHaveHappened(Repeated.Exactly.Once);
+		}
+		
+		[Test]
 		public void Construct_url_should_combine_url_and_query_params_for_get_requests()
 		{
 			const string UriPath = "something";
