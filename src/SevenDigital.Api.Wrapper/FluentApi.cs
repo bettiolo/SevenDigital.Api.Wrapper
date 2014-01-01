@@ -1,11 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
 using SevenDigital.Api.Wrapper.AttributeManagement;
 using SevenDigital.Api.Wrapper.EndpointResolution;
-using SevenDigital.Api.Wrapper.EndpointResolution.OAuth;
 using SevenDigital.Api.Wrapper.Exceptions;
 using SevenDigital.Api.Wrapper.Http;
 using SevenDigital.Api.Wrapper.Serialization;
@@ -30,10 +27,12 @@ namespace SevenDigital.Api.Wrapper
 		}
 
 		public FluentApi(IOAuthCredentials oAuthCredentials, IApiUri apiUri)
-			: this(new RequestCoordinator(new HttpClientWrapper(), new UrlSigner(), oAuthCredentials, apiUri)) { }
+			: this(new RequestCoordinator(new GzipHttpClient(), RequestHandlerFactory.AllRequestHandlers(oAuthCredentials, apiUri))) 
+			{}
 
 		public FluentApi()
-			: this(new RequestCoordinator(new HttpClientWrapper(), new UrlSigner(), EssentialDependencyCheck<IOAuthCredentials>.Instance, EssentialDependencyCheck<IApiUri>.Instance)) { }
+			: this(new RequestCoordinator(new GzipHttpClient(), RequestHandlerFactory.AllRequestHandlers(EssentialDependencyCheck<IOAuthCredentials>.Instance, EssentialDependencyCheck<IApiUri>.Instance))) 
+			{}
 
 		public IFluentApi<T> UsingClient(IHttpClient httpClient)
 		{
@@ -57,9 +56,9 @@ namespace SevenDigital.Api.Wrapper
 			return this;
 		}
 
-		public virtual IFluentApi<T> WithMethod(HttpMethod method)
+		public virtual IFluentApi<T> WithMethod(string methodName)
 		{
-			_requestData.HttpMethod = method;
+			_requestData.HttpMethod = methodName;
 			return this;
 		}
 
@@ -88,21 +87,16 @@ namespace SevenDigital.Api.Wrapper
 			return this;
 		}
 
-		public virtual string EndpointUrl
-		{
-			get { return _requestCoordinator.EndpointUrl(_requestData); }
-		}
-
-		public virtual async Task<T> PleaseAsync()
+		public virtual T Please()
 		{
 			Response response;
 
 			bool foundInCache = _responseCache.TryGet(_requestData, out response);
-			if (!foundInCache)
+			if (! foundInCache)
 			{
 				try
 				{
-					response = await _requestCoordinator.GetDataAsync(_requestData);
+					response = _requestCoordinator.HitEndpoint(_requestData);
 				}
 				catch (WebException webException)
 				{
@@ -128,6 +122,28 @@ namespace SevenDigital.Api.Wrapper
 			}
 		}
 
-		public IDictionary<string, string> Parameters { get { return _requestData.Parameters; } }
+		public virtual string EndpointUrl
+		{
+			get { return _requestCoordinator.ConstructEndpoint(_requestData); }
+		}
+
+		public virtual void PleaseAsync(Action<T> callback)
+		{
+			_requestCoordinator.HitEndpointAsync(_requestData, PleaseAsyncEnd(callback));
+		}
+
+		internal Action<Response> PleaseAsyncEnd(Action<T> callback)
+		{
+			return output =>
+			{
+				T entity = _parser.Parse(output);
+				callback(entity);
+			};
+		}
+
+		public IDictionary<string, string> Parameters
+		{
+			get { return _requestData.Parameters; }
+		}
 	}
 }

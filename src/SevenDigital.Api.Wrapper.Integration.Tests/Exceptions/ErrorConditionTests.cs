@@ -19,7 +19,7 @@ namespace SevenDigital.Api.Wrapper.Integration.Tests.Exceptions
 					() => Api<Artist>.Create.PleaseAsync().BusyAwait());
 
 			Assert.That(apiXmlException.ErrorCode, Is.EqualTo(ErrorCode.RequiredParameterMissing));
-			Assert.That(apiXmlException.Message, Is.EqualTo("Missing parameter artistId."));
+			Assert.That(apiXmlException.Message, Is.StringStarting("Missing parameter artistId"));
 		}
 
 		[Test]
