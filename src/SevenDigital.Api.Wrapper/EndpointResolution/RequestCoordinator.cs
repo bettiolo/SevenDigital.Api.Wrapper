@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using SevenDigital.Api.Wrapper.EndpointResolution.RequestHandlers;
 using SevenDigital.Api.Wrapper.Http;
@@ -20,26 +21,29 @@ namespace SevenDigital.Api.Wrapper.EndpointResolution
 
 		public string EndpointUrl(RequestData requestData)
 		{
-			return ConstructBuilder(requestData).ConstructEndpoint(requestData);
+			var requestHandler = FindRequestHandler(requestData.HttpMethod);
+			return requestHandler.ConstructEndpoint(requestData);
 		}
 
-		private RequestHandler ConstructBuilder(RequestData requestData)
+		private RequestHandler FindRequestHandler(HttpMethod httpMethod)
 		{
 			foreach (var requestHandler in _requestHandlers)
 			{
-				if (requestHandler.HandlesMethod(requestData.HttpMethod))
+				if (requestHandler.HandlesMethod(httpMethod))
 				{
 					return requestHandler;
 				}
 			}
-			throw new NotImplementedException("No RequestHandlers supplied that can deal with this method");
+
+			string errorMessage = string.Format("No RequestHandler supplied for method '{0}'", httpMethod);
+			throw new NotImplementedException(errorMessage);
 		}
 
 		public Task<Response> GetDataAsync(RequestData requestData)
 		{
-			var builder = ConstructBuilder(requestData);
-			builder.HttpClient = HttpClient;
-			return builder.HitEndpoint(requestData);
+			var requestHandler = FindRequestHandler(requestData.HttpMethod);
+			requestHandler.HttpClient = HttpClient;
+			return requestHandler.HitEndpoint(requestData);
 		}
 	}
 }

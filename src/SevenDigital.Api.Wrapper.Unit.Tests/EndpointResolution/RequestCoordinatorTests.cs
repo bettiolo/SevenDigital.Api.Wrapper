@@ -3,7 +3,6 @@ using System.Net;
 using FakeItEasy;
 using NUnit.Framework;
 using SevenDigital.Api.Wrapper.EndpointResolution;
-using SevenDigital.Api.Wrapper.EndpointResolution.RequestHandlers;
 using SevenDigital.Api.Wrapper.Http;
 using SevenDigital.Api.Wrapper.Unit.Tests.Http;
 
