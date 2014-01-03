@@ -1,4 +1,8 @@
-﻿using FakeItEasy;
+﻿using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
+using FakeItEasy;
 using NUnit.Framework;
 using SevenDigital.Api.Wrapper.EndpointResolution.OAuth;
 using SevenDigital.Api.Wrapper.EndpointResolution.RequestHandlers;
@@ -30,6 +34,9 @@ namespace SevenDigital.Api.Wrapper.Unit.Tests.EndpointResolution.RequestHandlers
 			_signatureGenerator = A.Fake<ISignatureGenerator>();
 
 			_httpClient = A.Fake<IHttpClient>();
+			var responseTask = Task.FromResult(new Response(HttpStatusCode.OK, "ok body"));
+			A.CallTo(() => _httpClient.GetAsync(A<IDictionary<string, string>>.Ignored, A<string>.Ignored))
+				.Returns(responseTask);
 
 			_handler = new GetRequestHandler(_apiUri, _oAuthCredentials, _signatureGenerator);
 			_handler.HttpClient = _httpClient;
@@ -91,30 +98,31 @@ namespace SevenDigital.Api.Wrapper.Unit.Tests.EndpointResolution.RequestHandlers
 		}
 
 		[Test]
-		public void Should_sign_request_when_hit_endpoint()
+		public async void Should_sign_request_when_hit_endpoint()
 		{
 			var data = GetRequest();
 
-			_handler.HitEndpoint(data);
+			await _handler.HitEndpoint(data);
 
 			A.CallTo(() => _signatureGenerator.Sign(A<OAuthSignatureInfo>.Ignored)).MustHaveHappened();
 		}
 
 		[Test]
-		public void Should_use_http_client_to_hit_endpoint()
+		public async void Should_use_http_client_to_hit_endpoint()
 		{
 			var data = GetRequest();
 
-			_handler.HitEndpoint(data);
+			await _handler.HitEndpoint(data);
 
-			A.CallTo(() => _httpClient.Get(A<GetRequest>.Ignored)).MustHaveHappened();
+			A.CallTo(() => _httpClient.GetAsync(A<IDictionary<string, string>>.Ignored, A<string>.Ignored))
+				.MustHaveHappened();
 		}
 
 		private static RequestData GetRequest()
 		{
 			return new RequestData
 			{
-				HttpMethod = "GET",
+				HttpMethod = HttpMethod.Get,
 				UriPath = "testpath",
 				UseHttps = false,
 				IsSigned = true
