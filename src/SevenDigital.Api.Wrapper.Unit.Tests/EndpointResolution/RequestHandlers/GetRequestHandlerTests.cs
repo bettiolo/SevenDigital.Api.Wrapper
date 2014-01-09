@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.Http;
 using FakeItEasy;
 using FakeItEasy.Configuration;
 using NUnit.Framework;
@@ -34,7 +35,7 @@ namespace SevenDigital.Api.Wrapper.Unit.Tests.EndpointResolution.RequestHandlers
 			_handler.HttpClient = _httpClient;
 			_requestData = new RequestData
 				{
-					HttpMethod = "GET",
+					HttpMethod = HttpMethod.Get,
 					Endpoint = "testpath",
 				};
 		}
@@ -115,7 +116,7 @@ namespace SevenDigital.Api.Wrapper.Unit.Tests.EndpointResolution.RequestHandlers
 
 		private IAssertConfiguration ARequestToAUriMatching(Func<Uri, bool> predicate)
 		{
-			return A.CallTo(() => _httpClient.Get(A<GetRequest>.That.Matches(g => predicate(new Uri(g.Url)))));
+			return A.CallTo(() => _httpClient.GetAsync(A<GetRequest>.That.Matches(g => predicate(new Uri(g.Url)))));
 		}
 	}
 }

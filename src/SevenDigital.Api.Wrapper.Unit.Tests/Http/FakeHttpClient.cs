@@ -13,12 +13,12 @@ namespace SevenDigital.Api.Wrapper.Unit.Tests.Http
 			_fakeResponse = fakeResponse;
 		}
 
-		public async Task<Response> GetAsync(IDictionary<string, string> headers, string url)
+		public async Task<Response> GetAsync(GetRequest request)
 		{
 			return await Task.FromResult(_fakeResponse);
 		}
 
-		public async Task<Response> PostAsync(IDictionary<string, string> headers, IDictionary<string, string> postParams, string url)
+		public async Task<Response> PostAsync(PostRequest request)
 		{
 			return await Task.FromResult(_fakeResponse);
 		}

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
+﻿using System.Net;
 using System.Threading.Tasks;
 using FakeItEasy;
 using SevenDigital.Api.Wrapper.EndpointResolution;
@@ -12,31 +10,28 @@ namespace SevenDigital.Api.Wrapper.Unit.Tests.Http
 	{
 		public static void MockGetAsync(this IHttpClient httpClient, Response response)
 		{
-			A.CallTo(() => httpClient.GetAsync(A<IDictionary<string, string>>.Ignored, A<string>.Ignored))
+			A.CallTo(() => httpClient.GetAsync(A<GetRequest>.Ignored))
 				.ReturnsLazily(() => Task.FromResult(response));
 		}
 
 		public static void GetAsyncOnUrlMustHaveHappened(this IHttpClient httpClient, string expected)
 		{
-			A.CallTo(() => httpClient.GetAsync(
-				A<IDictionary<string, string>>.Ignored,
-				A<string>.That.Matches(y => y == expected)))
+			A.CallTo(() => httpClient.GetAsync(A<GetRequest>
+				.That.Matches(y => y.Url == expected)))
 				.MustHaveHappened();
 		}
 
 		public static void GetAsyncOnUrlMustHaveHappenedOnce(this IHttpClient httpClient, string expected)
 		{
-			A.CallTo(() => httpClient.GetAsync(
-				A<IDictionary<string, string>>.Ignored,
-				A<string>.That.Matches(y => y == expected)))
+			A.CallTo(() => httpClient.GetAsync(A<GetRequest>
+				.That.Matches(y => y.Url == expected)))
 				.MustHaveHappened(Repeated.Exactly.Once);
 		}
 
 		public static void GetAsyncOnUrlContainingMustHaveHappenedOnce(this IHttpClient httpClient, string expected)
 		{
-			A.CallTo(() => httpClient.GetAsync(
-				A<IDictionary<string, string>>.Ignored,
-				A<string>.That.Matches(y => y.Contains(expected))))
+			A.CallTo(() => httpClient.GetAsync(A<GetRequest>
+				.That.Matches(y => y.Url.Contains(expected))))
 				.MustHaveHappened(Repeated.Exactly.Once);
 		}
 

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net;
-using System.Threading;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Xml;
 using FakeItEasy;
 using NUnit.Framework;
@@ -31,29 +32,31 @@ namespace SevenDigital.Api.Wrapper.Unit.Tests.Http
 		}
 
 		[Test]
-		public void Should_fire_resolve_with_correct_values()
+		public async void Should_fire_resolve_with_correct_values()
 		{
-			A.CallTo(() => _httpClient.Get(A<GetRequest>.Ignored))
-				.Returns(new Response(HttpStatusCode.OK, SERVICE_STATUS));
+			var response = new Response(HttpStatusCode.OK, SERVICE_STATUS);
+			A.CallTo(() => _httpClient.GetAsync(A<GetRequest>.Ignored))
+				.Returns(Task.FromResult(response));
 
-			const string expectedMethod = "GET";
+			var expectedMethod = HttpMethod.Get;
 			var expectedHeaders = new Dictionary<string, string>();
 			var expected = string.Format("{0}/test?oauth_consumer_key={1}", API_URL, _consumerKey);
 
 			var requestData = new RequestData { Endpoint = "test", HttpMethod = expectedMethod, Headers = expectedHeaders };
 
-			_requestCoordinator.HitEndpoint(requestData);
+			await _requestCoordinator.GetDataAsync(requestData);
 
 			A.CallTo(() => _httpClient
-					.Get(A<GetRequest>.That.Matches(y => y.Url == expected)))
+					.GetAsync(A<GetRequest>.That.Matches(y => y.Url == expected)))
 					.MustHaveHappened();
 		}
 
 		[Test]
-		public void Should_fire_resolve_with_url_encoded_parameters()
+		public async void Should_fire_resolve_with_url_encoded_parameters()
 		{
-			A.CallTo(() => _httpClient.Get(A<GetRequest>.Ignored))
-				.Returns(new Response(HttpStatusCode.OK, SERVICE_STATUS));
+			var response = new Response(HttpStatusCode.OK, SERVICE_STATUS);
+			A.CallTo(() => _httpClient.GetAsync(A<GetRequest>.Ignored))
+				.Returns(Task.FromResult(response));
 
 			const string unEncodedParameterValue = "Alive & Amplified";
 
@@ -62,12 +65,12 @@ namespace SevenDigital.Api.Wrapper.Unit.Tests.Http
 			var testParameters = new Dictionary<string, string> { { "q", unEncodedParameterValue } };
 			var expected = string.Format("{0}/test?q={2}&oauth_consumer_key={1}", API_URL, _consumerKey, expectedParameterValue);
 
-			var requestData = new RequestData { Endpoint = "test", HttpMethod = "GET", Headers = expectedHeaders, Parameters = testParameters };
+			var requestData = new RequestData { Endpoint = "test", HttpMethod = HttpMethod.Get, Headers = expectedHeaders, Parameters = testParameters };
 
-			_requestCoordinator.HitEndpoint(requestData);
+			await _requestCoordinator.GetDataAsync(requestData);
 
 			A.CallTo(() => _httpClient
-					.Get(A<GetRequest>.That.Matches(y => y.Url == expected)))
+					.GetAsync(A<GetRequest>.That.Matches(y => y.Url == expected)))
 					.MustHaveHappened();
 		}
 
@@ -76,55 +79,29 @@ namespace SevenDigital.Api.Wrapper.Unit.Tests.Http
 		{
 			var endPointState = new RequestData
 				{
-					Endpoint = "{slug}", 
-					HttpMethod = "GET", 
+					Endpoint = "{slug}",
+					HttpMethod = HttpMethod.Get, 
 					Parameters = new Dictionary<string, string> { { "slug", "something" } }
 				};
-			var result = _requestCoordinator.ConstructEndpoint(endPointState);
+			var result = _requestCoordinator.EndpointUrl(endPointState);
 
-			Assert.That(result, Is.EqualTo(_requestCoordinator.ConstructEndpoint(endPointState)));
+			Assert.That(result, Is.EqualTo(_requestCoordinator.EndpointUrl(endPointState)));
 		}
 
 		[Test]
-		public void Should_return_xmlnode_if_valid_xml_received()
+		public async void Should_return_xmlnode_if_valid_xml_received()
 		{
 			Given_a_urlresolver_that_returns_valid_xml();
 
-			var response = _requestCoordinator.HitEndpoint(new RequestData());
+			var response = await _requestCoordinator.GetDataAsync(new RequestData());
 			var hitEndpoint = new XmlDocument();
 			hitEndpoint.LoadXml(response.Body);
 			Assert.That(hitEndpoint.HasChildNodes);
 			Assert.That(hitEndpoint.SelectSingleNode("//serverTime"), Is.Not.Null);
 		}
 
-
 		[Test]
-		public void Should_return_xmlnode_if_valid_xml_received_using_async()
-		{
-			var fakeClient = new FakeHttpClient(new Response(HttpStatusCode.OK, SERVICE_STATUS));
-
-			var endpointResolver = new RequestCoordinator(fakeClient, _allRequestHandlers);
-
-			var reset = new AutoResetEvent(false);
-
-			string response = string.Empty;
-			endpointResolver.HitEndpointAsync(new RequestData(),
-			 s =>
-				{
-					response = s.Body;
-					reset.Set();
-				});
-
-			reset.WaitOne(1000 * 5);
-			var payload = new XmlDocument();
-			payload.LoadXml(response);
-
-			Assert.That(payload.HasChildNodes);
-			Assert.That(payload.SelectSingleNode("//serverTime"), Is.Not.Null);
-		}
-
-		[Test]
-		public void Should_use_api_uri_provided_by_IApiUri_interface()
+		public async void Should_use_api_uri_provided_by_IApiUri_interface()
 		{
 			const string expectedApiUri = "http://api.7dizzle";
 
@@ -138,22 +115,24 @@ namespace SevenDigital.Api.Wrapper.Unit.Tests.Http
 			var requestData = new RequestData
 				{
 					Endpoint = "test", 
-					HttpMethod = "GET", 
+					HttpMethod = HttpMethod.Get, 
 					Headers = new Dictionary<string, string>()
 				};
 
-			endpointResolver.HitEndpoint(requestData);
+			await endpointResolver.GetDataAsync(requestData);
 
 			A.CallTo(() => apiUri.Uri).MustHaveHappened(Repeated.Exactly.Once);
 
-			A.CallTo(() => _httpClient.Get(A<GetRequest>.That.Matches(x => x.Url.ToString().Contains(expectedApiUri)))).MustHaveHappened(Repeated.Exactly.Once);
+			A.CallTo(() => _httpClient.GetAsync(
+				A<GetRequest>.That.Matches(x => x.Url.Contains(expectedApiUri))))
+				.MustHaveHappened(Repeated.Exactly.Once);
 		}
 
 		[Test]
 		public void Construct_url_should_combine_url_and_query_params_for_get_requests()
 		{
 			const string uriPath = "something";
-			var result = _requestCoordinator.ConstructEndpoint(new RequestData { Endpoint = uriPath });
+			var result = _requestCoordinator.EndpointUrl(new RequestData { Endpoint = uriPath });
 
 			Assert.That(result, Is.EqualTo(API_URL + "/" + uriPath + "?oauth_consumer_key=" + _consumerKey));
 		}
@@ -162,15 +141,17 @@ namespace SevenDigital.Api.Wrapper.Unit.Tests.Http
 		public void Construct_url_should_combine_url_and_not_query_params_for_post_requests()
 		{
 			const string uriPath = "something";
-			var result = _requestCoordinator.ConstructEndpoint(new RequestData { Endpoint = uriPath,HttpMethod = "POST" });
+			var result = _requestCoordinator.EndpointUrl(new RequestData { Endpoint = uriPath, HttpMethod = HttpMethod.Post });
 
 			Assert.That(result, Is.EqualTo(API_URL + "/" + uriPath ));
 		}
 
 		private void Given_a_urlresolver_that_returns_valid_xml()
 		{
-			A.CallTo(() => _httpClient.Get(A<GetRequest>.Ignored))
-				.Returns(new Response(HttpStatusCode.OK, SERVICE_STATUS));
+			var response = new Response(HttpStatusCode.OK, SERVICE_STATUS);
+
+			A.CallTo(() => _httpClient.GetAsync(A<GetRequest>.Ignored))
+				.Returns(Task.FromResult(response));
 		}
 	}
 }
