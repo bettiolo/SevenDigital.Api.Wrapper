@@ -3,36 +3,34 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using SevenDigital.Api.Wrapper.EndpointResolution;
 
 namespace SevenDigital.Api.Wrapper.Http
 {
 	public class HttpClientWrapper : IHttpClient
 	{
-		public async Task<Response> GetAsync(IDictionary<string, string> headers, string url)
+		public async Task<Response> GetAsync(GetRequest request)
 		{
-			var httpClient = MakeHttpClient(headers);
-			using (var httpResponseMessage = await httpClient.GetAsync(url))
+			var httpClient = MakeHttpClient(request.Headers);
+			using (var httpResponseMessage = await httpClient.GetAsync(request.Url))
 			{
 				return await MakeResponse(httpResponseMessage);
 			}
 		}
 
-		public async Task<Response> PostAsync(IDictionary<string, string> headers, IDictionary<string, string> postParams, string url)
+		public async Task<Response> PostAsync(PostRequest request)
 		{
-			var httpClient = MakeHttpClient(headers);
-			var content = PostParamsToHttpContent(postParams);
+			var httpClient = MakeHttpClient(request.Headers);
+			var content = PostParamsToHttpContent(request.Body);
 
-			using (var httpResponseMessage = await httpClient.PostAsync(url, content))
+			using (var httpResponseMessage = await httpClient.PostAsync(request.Url, content))
 			{
 				return await MakeResponse(httpResponseMessage);
 			}
 		}
 
-		private static HttpContent PostParamsToHttpContent(IDictionary<string, string> postParams)
+		private static HttpContent PostParamsToHttpContent(string body)
 		{
-			string postData = postParams.ToQueryString();
-			HttpContent content = new StringContent(postData);
+			HttpContent content = new StringContent(body);
 			content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
 			return content;
 		}

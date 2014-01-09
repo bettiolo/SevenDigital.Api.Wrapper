@@ -15,7 +15,7 @@ namespace SevenDigital.Api.Wrapper.Unit.Tests.AttributeManagement
 			var attributeValidation = new AttributeRequestDataBuilder<StubEndpoint>();
 			var requestData = attributeValidation.BuildRequestData();
 
-			Assert.That(requestData.UriPath, Is.EqualTo("me/endpoint"));
+			Assert.That(requestData.Endpoint, Is.EqualTo("me/endpoint"));
 		}
 
 		[Test]
@@ -24,7 +24,7 @@ namespace SevenDigital.Api.Wrapper.Unit.Tests.AttributeManagement
 			var attributeValidation = new AttributeRequestDataBuilder<StubSecureEndpoint>();
 			var requestData = attributeValidation.BuildRequestData();
 
-			Assert.That(requestData.IsSigned);
+			Assert.That(requestData.RequiresSignature);
 		}
 
 		[Test]
@@ -33,7 +33,7 @@ namespace SevenDigital.Api.Wrapper.Unit.Tests.AttributeManagement
 			var attributeValidation = new AttributeRequestDataBuilder<StubEndpoint>();
 			var requestData = attributeValidation.BuildRequestData();
 
-			Assert.That(requestData.IsSigned, Is.False);
+			Assert.That(requestData.RequiresSignature, Is.False);
 		}
 
 		[Test]

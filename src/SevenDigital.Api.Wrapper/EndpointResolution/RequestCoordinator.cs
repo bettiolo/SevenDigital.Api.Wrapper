@@ -22,7 +22,7 @@ namespace SevenDigital.Api.Wrapper.EndpointResolution
 		public string EndpointUrl(RequestData requestData)
 		{
 			var requestHandler = FindRequestHandler(requestData.HttpMethod);
-			return requestHandler.ConstructEndpoint(requestData);
+			return requestHandler.GetDebugUri(requestData);
 		}
 
 		private RequestHandler FindRequestHandler(HttpMethod httpMethod)

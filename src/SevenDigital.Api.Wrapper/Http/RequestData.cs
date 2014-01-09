@@ -4,16 +4,15 @@ using System.Net.Http;
 
 namespace SevenDigital.Api.Wrapper.Http
 {
-	[Serializable]
 	public class RequestData
 	{
-		public string UriPath { get; set; }
+		public string Endpoint { get; set; }
 
 		public HttpMethod HttpMethod { get; set; }
 
-		public Dictionary<string, string> Parameters { get; set; }
+		public IDictionary<string,string> Parameters { get; set; }
 
-		public Dictionary<string, string> Headers { get; set; }
+		public IDictionary<string,string> Headers { get; set; }
 
 		public bool UseHttps { get; set; }
 
@@ -21,14 +20,22 @@ namespace SevenDigital.Api.Wrapper.Http
 
 		public string TokenSecret { get; set; }
 
-		public bool IsSigned { get; set; }
+		[Obsolete("Use TokenSecret")]
+		public string UserSecret { get { return TokenSecret; } set { TokenSecret = value; } }
+
+		public bool RequiresSignature { get; set; }
+
+		public bool HasToken
+		{
+			get { return UserToken != null; }
+		}
 
 		public RequestData()
 		{
-			UriPath = string.Empty;
+			Endpoint = string.Empty;
 			HttpMethod = HttpMethod.Get;
-			Parameters = new Dictionary<string, string>();
-			Headers = new Dictionary<string, string>();
+			Parameters = new Dictionary<string,string>();
+			Headers = new Dictionary<string,string>();
 			UseHttps = false;
 		}
 	}

@@ -1,10 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using FakeItEasy;
+﻿using FakeItEasy;
 using NUnit.Framework;
-using SevenDigital.Api.Wrapper.EndpointResolution.OAuth;
 using SevenDigital.Api.Wrapper.EndpointResolution.RequestHandlers;
 using SevenDigital.Api.Wrapper.Http;
 
@@ -15,7 +10,6 @@ namespace SevenDigital.Api.Wrapper.Unit.Tests.EndpointResolution.RequestHandlers
 	{
 		private IApiUri _apiUri;
 		private IOAuthCredentials _oAuthCredentials;
-		private ISignatureGenerator _signatureGenerator;
 		private IHttpClient _httpClient;
 
 		private PostRequestHandler _handler;
@@ -24,34 +18,17 @@ namespace SevenDigital.Api.Wrapper.Unit.Tests.EndpointResolution.RequestHandlers
 		public void Setup()
 		{
 			_apiUri = A.Fake<IApiUri>();
-			A.CallTo(() => _apiUri.Uri).Returns("http://testuri.com/");
-			A.CallTo(() => _apiUri.SecureUri).Returns("https://securetesturi.com/");
+			A.CallTo(() => _apiUri.Uri).Returns("http://example.com");
+			A.CallTo(() => _apiUri.SecureUri).Returns("https://example.com");
 
 			_oAuthCredentials = A.Fake<IOAuthCredentials>();
 			A.CallTo(() => _oAuthCredentials.ConsumerKey).Returns("testkey");
 			A.CallTo(() => _oAuthCredentials.ConsumerSecret).Returns("testsecret");
 
-			_signatureGenerator = A.Fake<ISignatureGenerator>();
-
 			_httpClient = A.Fake<IHttpClient>();
-			var responseTask = Task.FromResult(new Response(HttpStatusCode.OK, "ok body"));
-			A.CallTo(() => _httpClient.PostAsync(A<IDictionary<string, string>>.Ignored,
-				A<IDictionary<string, string>>.Ignored, A<string>.Ignored))
-				.Returns(responseTask);
 
-			_handler = new PostRequestHandler(_apiUri, _oAuthCredentials, _signatureGenerator);
+			_handler = new PostRequestHandler(_apiUri, _oAuthCredentials);
 			_handler.HttpClient = _httpClient;
-		}
-
-		[Test]
-		public void Should_return_uri_when_ConstructEndpoint_is_called()
-		{
-			var data = PostRequest();
-
-			var endpoint = _handler.ConstructEndpoint(data);
-
-			Assert.That(endpoint, Is.Not.Empty);
-			Assert.That(endpoint, Is.StringContaining("testpath"));
 		}
 
 		[Test]
@@ -59,10 +36,9 @@ namespace SevenDigital.Api.Wrapper.Unit.Tests.EndpointResolution.RequestHandlers
 		{
 			var data = PostRequest();
 
-			_handler.ConstructEndpoint(data);
+			_handler.HitEndpoint(data);
 
-			A.CallTo(() => _apiUri.Uri).MustHaveHappened();
-			A.CallTo(() => _apiUri.SecureUri).MustNotHaveHappened();
+			A.CallTo(() => _httpClient.Post(A<PostRequest>.That.Matches(p => p.Url.StartsWith("http://example.com/testpath")))).MustHaveHappened();
 		}
 
 		[Test]
@@ -71,21 +47,37 @@ namespace SevenDigital.Api.Wrapper.Unit.Tests.EndpointResolution.RequestHandlers
 			var data = PostRequest();
 			data.UseHttps = true;
 
-			_handler.ConstructEndpoint(data);
+			_handler.HitEndpoint(data);
 
-			A.CallTo(() => _apiUri.Uri).MustNotHaveHappened();
-			A.CallTo(() => _apiUri.SecureUri).MustHaveHappened();
+			A.CallTo(() => _httpClient.Post(A<PostRequest>.That.Matches(p => p.Url.StartsWith("https://example.com/testpath")))).MustHaveHappened();
 		}
 
 		[Test]
-		public void Should_not_put_oauth_data_on_constructed_endpoint()
+		public void Should_not_put_oauth_data_on_uri()
 		{
 			var data = PostRequest();
 
-			_handler.ConstructEndpoint(data);
+			_handler.HitEndpoint(data);
 
-			A.CallTo(() => _oAuthCredentials.ConsumerKey).MustNotHaveHappened();
-			A.CallTo(() => _oAuthCredentials.ConsumerSecret).MustNotHaveHappened();
+			A.CallTo(() => _httpClient.Post(A<PostRequest>.That.Matches(p => p.Url.Contains("oauth_consumer_key")))).MustNotHaveHappened();
+		}
+
+		[Test]
+		public void Should_put_oauth_consumer_key_in_parameters()
+		{
+			var data = PostRequest();
+			_handler.HitEndpoint(data);
+			A.CallTo(() => _httpClient.Post(A<PostRequest>.That.Matches(p => p.Body.Contains("oauth_consumer_key=testkey")))).MustHaveHappened();
+		}
+
+		[Test]
+		public void Should_put_oauth_signature_in_parameters()
+		{
+			var data = PostRequest();
+			data.RequiresSignature = true;
+
+			_handler.HitEndpoint(data);
+			A.CallTo(() => _httpClient.Post(A<PostRequest>.That.Matches(p => p.Body.Contains("oauth_signature=")))).MustHaveHappened();
 		}
 
 		[Test]
@@ -93,41 +85,50 @@ namespace SevenDigital.Api.Wrapper.Unit.Tests.EndpointResolution.RequestHandlers
 		{
 			var data = PostRequest();
 
-			_handler.ConstructEndpoint(data);
-
-			A.CallTo(() => _signatureGenerator.Sign(A<OAuthSignatureInfo>.Ignored)).MustNotHaveHappened();
+			_handler.HitEndpoint(data);
+			A.CallTo(() => _httpClient.Post(A<PostRequest>.That.Matches(p => p.Body.Contains("oauth_signature=")))).MustNotHaveHappened();
 		}
 
 		[Test]
-		public async void Should_sign_request_when_hit_endpoint()
+		public void Should_sign_request_if_required()
 		{
 			var data = PostRequest();
+			data.RequiresSignature = true;
 
-			await _handler.HitEndpoint(data);
+			_handler.HitEndpoint(data);
 
-			A.CallTo(() => _signatureGenerator.SignWithPostData(A<OAuthSignatureInfo>.Ignored)).MustHaveHappened();
+			A.CallTo(() => _httpClient.Post(A<PostRequest>.That.Matches(p => p.Body.Contains("oauth_signature")))).MustHaveHappened();
 		}
 
 		[Test]
-		public async void Should_use_http_client_to_hit_endpoint()
+		public void Should_include_oauth_token_if_required()
+		{
+			var data = PostRequest();
+			data.RequiresSignature = true;
+			data.UserToken = "foo";
+			data.TokenSecret = "secret";
+
+			_handler.HitEndpoint(data);
+
+			A.CallTo(() => _httpClient.Post(A<PostRequest>.That.Matches(p => p.Body.Contains("oauth_token=foo")))).MustHaveHappened();
+		}
+
+		[Test]
+		public void Should_use_http_client_to_hit_endpoint()
 		{
 			var data = PostRequest();
 
-			await _handler.HitEndpoint(data);
+			_handler.HitEndpoint(data);
 
-			A.CallTo(() => _httpClient.PostAsync(A<IDictionary<string, string>>.Ignored, A<IDictionary<string, string>>.Ignored,
-				A<string>.Ignored))
-				.MustHaveHappened();
+			A.CallTo(() => _httpClient.Post(A<PostRequest>.Ignored)).MustHaveHappened();
 		}
 
 		private static RequestData PostRequest()
 		{
 			return new RequestData
 			{
-				HttpMethod = HttpMethod.Post,
-				UriPath = "testpath",
-				UseHttps = false,
-				IsSigned = true
+				HttpMethod = "POST",
+				Endpoint = "testpath",
 			};
 		}
 	}
