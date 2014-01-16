@@ -1,14 +1,13 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using SevenDigital.Api.Wrapper.Http;
 
 namespace SevenDigital.Api.Wrapper.Unit.Tests.Http
 {
-	public class FakeHttpClientWrapper : IHttpClient
+	public class FakeHttpClientMediator : IHttpClient
 	{
 		private readonly Response _fakeResponse;
 
-		public FakeHttpClientWrapper(Response fakeResponse)
+		public FakeHttpClientMediator(Response fakeResponse)
 		{
 			_fakeResponse = fakeResponse;
 		}

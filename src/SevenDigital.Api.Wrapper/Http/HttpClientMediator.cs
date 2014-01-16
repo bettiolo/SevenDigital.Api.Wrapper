@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SevenDigital.Api.Wrapper.Http
 {
-	public class HttpClientWrapper : IHttpClient
+	public class HttpClientMediator : IHttpClient
 	{
 		public async Task<Response> GetAsync(GetRequest request)
 		{

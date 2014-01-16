@@ -67,7 +67,7 @@ namespace SevenDigital.Api.Wrapper.Unit.Tests
 		public void Should_use_custom_http_client()
 		{
 			var fakeRequestCoordinator = A.Fake<IRequestCoordinator>();
-			var fakeHttpClient = new FakeHttpClientWrapper(_stubResponse);
+			var fakeHttpClient = new FakeHttpClientMediator(_stubResponse);
 
 			new FluentApi<Status>(fakeRequestCoordinator).UsingClient(fakeHttpClient);
 

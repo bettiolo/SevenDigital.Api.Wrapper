@@ -7,7 +7,7 @@ using SevenDigital.Api.Wrapper.Http;
 namespace SevenDigital.Api.Wrapper.Integration.Tests.Http
 {
 	[TestFixture]
-	public class HttpClientWrapperTests
+	public class HttpClientMediatorTests
 	{
 		private const string ApiUrl = "http://api.7digital.com/1.2";
 		private string consumerKey;
@@ -24,7 +24,7 @@ namespace SevenDigital.Api.Wrapper.Integration.Tests.Http
 			string url = string.Format("{0}/status?oauth_consumer_key={1}", ApiUrl, consumerKey);
 			var request = new GetRequest(url,  new Dictionary<string, string>());
 
-			var response = await new HttpClientWrapper().GetAsync(request);
+			var response = await new HttpClientMediator().GetAsync(request);
 			AssertResponse(response, HttpStatusCode.OK);
 		}
 
@@ -34,7 +34,7 @@ namespace SevenDigital.Api.Wrapper.Integration.Tests.Http
 			string url = string.Format("{0}/foo/bar/fish/1234?oauth_consumer_key={1}", ApiUrl, consumerKey);
 			var request = new GetRequest(url, new Dictionary<string, string>());
 
-			var response = await new HttpClientWrapper().GetAsync(request);
+			var response = await new HttpClientMediator().GetAsync(request);
 			AssertResponse(response, HttpStatusCode.NotFound);
 		}
 
@@ -44,7 +44,7 @@ namespace SevenDigital.Api.Wrapper.Integration.Tests.Http
 			string url = string.Format("{0}/status", ApiUrl);
 			var request = new GetRequest(url, new Dictionary<string, string>());
 
-			var response = await new HttpClientWrapper().GetAsync(request);
+			var response = await new HttpClientMediator().GetAsync(request);
 			AssertResponse(response, HttpStatusCode.Unauthorized);
 		}
 
@@ -57,7 +57,7 @@ namespace SevenDigital.Api.Wrapper.Integration.Tests.Http
 			var apiUrl = "http://hanging-web-app.7digital.local";
 			var request = new GetRequest(apiUrl, new Dictionary<string, string>());
 
-			var response = await new HttpClientWrapper().GetAsync(request);
+			var response = await new HttpClientMediator().GetAsync(request);
 			AssertResponse(response, HttpStatusCode.OK);
 		}
 
@@ -72,7 +72,7 @@ namespace SevenDigital.Api.Wrapper.Integration.Tests.Http
 
 			var request = new PostRequest(url, new Dictionary<string, string>(), parameters.ToQueryString());
 
-			var response = await new HttpClientWrapper().PostAsync(request);
+			var response = await new HttpClientMediator().PostAsync(request);
 			AssertResponse(response, HttpStatusCode.NotFound);
 		}
 
